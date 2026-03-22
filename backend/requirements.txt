@@ -1,0 +1,52 @@
+# ============================================================
+# IFS Agri Backend — Requirements (Production)
+# pip install -r requirements.txt
+# ============================================================
+
+# ── FastAPI Core ────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.1
+python-multipart>=0.0.9
+pydantic>=2.7.4
+pydantic[email]>=2.7.4
+
+# ── Environment ─────────────────────────────────────────────
+python-dotenv>=1.0.1
+
+# ── Database — Railway PostgreSQL ───────────────────────────
+sqlalchemy>=2.0.30
+asyncpg>=0.29.0           # Async PostgreSQL driver
+psycopg2-binary>=2.9.9   # Sync fallback (untuk alembic)
+alembic>=1.13.1           # Database migrations
+
+# ── Auth — JWT nyata + bcrypt ────────────────────────────────
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# ── Qdrant Cloud (Vector Database untuk RAG) ─────────────────
+qdrant-client>=1.9.1
+
+# ── Google Gemini (LLM + Embedding model) ────────────────────
+# Gratis: https://aistudio.google.com/app/apikey
+google-generativeai>=0.5.4
+
+# ── HTTP Client ──────────────────────────────────────────────
+httpx>=0.27.0
+
+# ── Redis (untuk caching — Railway Redis sudah running) ─────
+redis>=5.0.4
+aioredis>=2.0.1
+
+# ────────────────────────────────────────────────────────────
+# TIDAK PERLU (Gemini Embeddings menggantikan ini):
+# sentence-transformers  # terlalu besar untuk Railway free
+# torch
+# ────────────────────────────────────────────────────────────
+
+# ── ML & XAI (aktifkan saat model ML nyata tersedia) ────────
+# scikit-learn>=1.5.0
+# xgboost>=2.1.0
+# shap>=0.45.1
+# numpy>=1.26.4
+# pandas>=2.2.2
+# joblib>=1.4.2
