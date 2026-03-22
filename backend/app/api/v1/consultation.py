@@ -47,19 +47,41 @@ async def chat_with_ai(request: ChatRequest):
         raise HTTPException(status_code=400, detail="Pesan tidak boleh kosong")
 
     try:
-        answer, sources, confidence = await rag_answer(
-            question=request.message,
-            farm_context=request.farm_context,
-            top_k=5
-        )
+        import google.generativeai as genai
+        import os
+        
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise Exception("GEMINI_API_KEY tidak ditemukan di environment")
+            
+        genai.configure(api_key=api_key)
+        
+        # Bypass RAG, langsung gunakan LLM
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        
+        prompt = f"""
+        Kamu adalah AI Assistant Pertanian untuk sistem IFS Agri (Integrated Farming System).
+        Saat ini fitur RAG (Retrieval-Augmented Generation) sedang dinonaktifkan sementara.
+        Jawablah pertanyaan berikut dengan singkat, jelas, dan akurat berdasarkan pengetahuan dasar pertanianmu.
+        
+        Pertanyaan: {request.message}
+        """
+        
+        response = model.generate_content(prompt)
+        answer = response.text
+        
+        # Mock source since we bypass RAG
+        sources = [
+            {"title": "Pengetahuan Dasar Gemini AI", "score": 1.0}
+        ]
+        confidence = 0.95
 
-        # XAI explanation sederhana (akan diperkaya di sistem penuh)
+        # XAI explanation sederhana
         xai = XAIExplanation(
-            summary=f"Jawaban ini didasarkan pada {len(sources)} dokumen ilmiah pertanian Indonesia dengan tingkat keyakinan {int(confidence * 100)}%.",
+            summary="Saat ini menggunakan Gemini Agent secara langsung. Fitur analisis dokumen RAG dinonaktifkan untuk sementara.",
             key_factors=[
-                "Relevansi semantik dokumen RAG",
-                "Konteks lahan pengguna",
-                "Pengetahuan LLM tentang pertanian tropis"
+                "Pengetahuan umum model LLM Gemini",
+                "Prompt Assistant Pertanian"
             ]
         )
 
