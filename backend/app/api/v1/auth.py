@@ -135,7 +135,8 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
         location=request.location,
     )
     db.add(new_user)
-    await db.flush()   # Flush agar ID assigned, commit dilakukan di get_db()
+    await db.flush()   
+    await db.refresh(new_user)
 
     token = create_access_token(new_user.id)
     return {
