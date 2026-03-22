@@ -112,38 +112,46 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 @router.post("/register")
 async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    email = request.email.lower().strip()
+    try:
+        email = request.email.lower().strip()
 
-    # Cek duplikat email
-    existing = await db.execute(select(User).where(User.email == email))
-    if existing.scalar_one_or_none():
-        raise HTTPException(status_code=409, detail="Email sudah terdaftar")
+        # Cek duplikat email
+        existing = await db.execute(select(User).where(User.email == email))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="Email sudah terdaftar")
 
-    # Cek duplikat telepon jika diisi
-    if request.phone:
-        existing_phone = await db.execute(select(User).where(User.phone == request.phone))
-        if existing_phone.scalar_one_or_none():
-            raise HTTPException(status_code=409, detail="Nomor telepon sudah terdaftar")
+        # Cek duplikat telepon jika diisi
+        if request.phone:
+            existing_phone = await db.execute(select(User).where(User.phone == request.phone))
+            if existing_phone.scalar_one_or_none():
+                raise HTTPException(status_code=409, detail="Nomor telepon sudah terdaftar")
 
-    new_user = User(
-        id=str(uuid.uuid4()),
-        name=request.name,
-        phone=request.phone or None,
-        email=email,
-        hashed_password=hash_password(request.password),
-        role=request.role,
-        location=request.location,
-    )
-    db.add(new_user)
-    await db.flush()   
-    await db.refresh(new_user)
+        new_user = User(
+            id=str(uuid.uuid4()),
+            name=request.name,
+            phone=request.phone or None,
+            email=email,
+            hashed_password=hash_password(request.password),
+            role=request.role,
+            location=request.location,
+        )
+        db.add(new_user)
+        await db.flush()   
+        await db.refresh(new_user)
 
-    token = create_access_token(new_user.id)
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": new_user.to_dict(),
-    }
+        token = create_access_token(new_user.id)
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user": new_user.to_dict(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[REGISTER ERROR] {tb}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {type(e).__name__}: {str(e)}")
 
 @router.get("/me")
 async def get_me(current_user: User = Depends(get_current_user)):
