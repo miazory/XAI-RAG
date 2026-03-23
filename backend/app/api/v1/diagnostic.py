@@ -137,14 +137,38 @@ async def run_gemini_diagnosis(request: DiagnosticRequest) -> dict:
         return _fallback_diagnosis(request)
     
     try:
-        model = genai.GenerativeModel(
-            GEMINI_MODEL,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.1,     # Low temp untuk konsistensi prediksi
-                max_output_tokens=800,
+        if request.image_base64:
+            # Menggunakan vision model jika ada gambar
+            model_name = "gemini-pro-vision"
+            model = genai.GenerativeModel(
+                model_name,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.1,
+                    max_output_tokens=800,
+                )
             )
-        )
-        response = await model.generate_content_async(prompt)
+            # image_base64 mungkin punya prefix (data:image/jpeg;base64, )
+            b64_str = request.image_base64
+            if "," in b64_str:
+                b64_str = b64_str.split(",")[1]
+                
+            image_part = {
+                "mime_type": "image/jpeg",
+                "data": b64_str
+            }
+            response = await model.generate_content_async([prompt, image_part])
+        else:
+            # Text only model
+            model_name = "gemini-pro"
+            model = genai.GenerativeModel(
+                model_name,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.1,
+                    max_output_tokens=800,
+                )
+            )
+            response = await model.generate_content_async(prompt)
+            
         raw = response.text.strip()
         
         # Bersihkan output (kadang Gemini wrap dengan ```json```)

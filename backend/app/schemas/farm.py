@@ -4,8 +4,14 @@ from typing import Optional
 class FarmResponse(BaseModel):
     id: str
     name: str
-    area: float
+    areaHectare: float
+    location: str
     commodity: str
     status: str
-    cropPhase: str
+    phase: str
     alertMessage: Optional[str] = None
+    ph: Optional[float] = None
+    nitrogen: Optional[float] = None
+    phosphorus: Optional[float] = None
+    potassium: Optional[float] = None
+    imageBase64: Optional[str] = None

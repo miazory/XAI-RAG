@@ -57,7 +57,7 @@ async def chat_with_ai(request: ChatRequest):
         genai.configure(api_key=api_key)
         
         # Bypass RAG, langsung gunakan LLM
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-pro")
         
         prompt = f"""
         Kamu adalah AI Assistant Pertanian untuk sistem IFS Agri (Integrated Farming System).
